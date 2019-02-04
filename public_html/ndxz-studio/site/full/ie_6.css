@@ -1,0 +1,65 @@
+/**
+* CSS
+* 
+* @version 1.0
+* @author Vaska 
+* @author Gregory Cadar
+*/
+html {
+	margin: 0;
+	padding: 0;
+	overflow: auto;
+   }
+
+body {  }
+
+* {}
+
+#menu {
+    z-index: 20;
+    width: 213px;
+    overflow: hidden;
+    top: 53px;
+	left: 279px;
+    height: 20px;
+	background-color: white;
+	border-color: black;
+	margin: 0 0 0 0;
+	border: none;
+	position: absolute;
+}
+
+* html div#content .miniexpo { 
+	border-top: dotted 1px black;
+	width: 213px;
+	height: 296px;
+	float: left;
+	display: inline;
+	position: relative;
+	padding: 0 0 0 0; 
+	margin: 0 16px 0 0;
+	
+
+}
+
+* html div#content .img-miniexpo {
+	margin: 18px 0 0 0;
+}
+
+* html div#info-dynamique { 
+    
+ }  
+
+* html div#content {
+   
+}
+
+img.png {
+	background-image: expression(
+		this.runtimeStyle.backgroundImage = "none",
+		this.runtimeStyle.filter =
+		"progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" + this.src +
+		"', sizingMethod='image')",
+		this.src = "/path/to/transparent.gif"
+	);
+}

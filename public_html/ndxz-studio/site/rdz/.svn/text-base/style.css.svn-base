@@ -1,0 +1,428 @@
+/**
+* CSS
+*/
+* {
+	margin: 0;
+	padding: 0;
+	}
+	
+/*pln */
+#full {
+  background-color: pink;
+  width:5000px;
+  height:900px;
+}
+
+div.expo  {
+	width:900px;
+	height:900px;
+	background-color:blue;
+	float: left;
+}
+/* fin pln */
+
+body {
+	font-size: 12px;
+	font-family: times , serif;
+	background: #fff;
+	font-style: none;
+	}
+
+body.section-1 { }
+body.section-2 { }
+body.section-3 { }
+
+a:link {
+	text-decoration: none;
+	color: black;
+	}
+
+a:active {
+	text-decoration: none;
+	color: black;
+	}
+
+a:visited {
+	text-decoration: none;
+	color: black;
+	}
+
+a:hover {
+	text-decoration: none;
+	color: black;
+	background-color: yellow;
+	}
+
+a img { border: none; }
+
+#logo {
+	z-index: 10;
+	position: fixed;
+	width: 950px;
+	overflow: hidden;
+	top: 0px;
+	bottom: 0;
+	left: 0px;
+	position: fixed;
+	height: 30px;
+	background-color: white;
+	border-bottom: none;
+	border-width: 1px;
+	}
+
+#logo img { margin: 0  0 0 0; }
+
+#menu  {
+	top: 10px;
+	width:150px;
+	height:150px;
+	margin: 10px;
+	position: fixed;
+	background-color: #EEEEEE;
+}
+
+#menu .container { padding: 30px 0 0 0; }
+#menu a:hover { }
+#menu a:active { }
+#menu a:visited { }
+
+#menu ul {
+	list-style-type: disc;
+	display: inline;
+	margin: 0 0 0 0;
+	border-bottom: none;
+	padding: 0 0 0;
+	background: none;
+	height: 100px;
+	}
+
+#menu select { width: 213px; }
+#menu select option { padding-left: 7px; }
+
+#menu li {
+	text-transform: lowercase;
+	text-transform: none;
+	font-style: none;
+	color: black;
+	font-size: 32px;
+	font-weight: none;
+	margin: 10px;
+	padding-left: none;
+	}
+
+#menu cite { color: blue; }
+#menu .section-title { }
+
+#content {
+	z-index: 1;
+	margin: 0 0 0 0;
+	width: 916px;
+	top: 150px;
+	bottom: 0;
+	left: 50px;
+	position: absolute;
+	background-color: none;
+	border: none;
+	}
+
+#content .miniexpo {
+	position: relative;
+	float: left;
+	border: none;
+	padding: 18px 0 0 0;
+	margin: 0 16px 40px 0;
+	border-top: dotted 1px black;
+	}
+
+#content .title-miniexpo { }
+#content .img-miniexpo { }
+#content strong { }
+#content .miniexpo span a { }
+
+#content .miniexpo.img-miniexpo {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 10;
+	}
+
+#content .content-miniexpo span { display: none; }
+#content .content-miniexpo:hover span { display: block; }
+
+#content .miniexpo .txt-miniexpo {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 30;
+	color: black;
+	margin-top: 0px;
+	font-size: 11px;
+	}
+
+.container {
+	padding: 5px 5px 25px 5px;
+	border: none;
+	}
+
+#content p { }
+
+#info-dynamique {
+	display: none;
+	position: fixed;
+	top: 0px;
+	left: 500px;
+	z-index: 50;
+	margin-bottom: none;
+	font-weight: bold;
+	line-height: 14px;
+	padding-bottom: 0px;
+	background: none;
+	color: blue;
+	text-align: left;
+	vertical-align: top;
+	padding: 0 0 0;
+	font-size: 12px;
+	}
+
+p { margin: 0px 0 0 0; }
+p a { margin: 0 0 0 0; }
+h1 { font-size: 32px; }
+h2 { font-size: 24px; }
+h3 { font-size: 16px; }
+h4 { font-size: 12px; }
+
+#img-container {
+
+	position: absolute;
+	width: 671px;
+	border: none;
+	z-index: 40;
+	/*left: 229px;*/
+	}
+
+#img-container .nav {
+	display: none;
+	width: 671px;
+	/*border: none;*/
+	top:500px;
+	}
+
+#img-container img {
+	/*position: absolute;*/
+	cursor: pointer;
+	left: 0px;
+	top: 0px
+	border: none;
+	}
+
+#img-info {
+	top: 465px;
+	left: 0px;
+	font-size: 10px;
+	font-family: arial;
+	font-style: normal;
+	margin-top: 4px;
+	}
+
+#txt-container {
+	position: absolute;
+	width: 213px;
+	top: 0px;
+	left: 0px;
+	border: none;
+	z-index: 60;
+	}
+
+#txt-container strong {
+	color: black;
+	font-size: 14px;
+	}
+
+#txt-container em {
+	font-size: 10px;
+	font-family: arial, sans-serif;
+	font-style: normal;
+	font-weight: none;
+	line-height: 13px;
+	text-decoration: underline;
+	}
+
+#txt-container u { }
+
+#txt-container p {
+	width: 213px;
+	padding-left: 0px;
+	border: none;
+	border-top: dotted 1px black;
+	padding-top: 18px;
+	position: fixed;
+	}
+
+#hello ul {
+	color: black;
+	font-size: 24px;
+	border-top: dotted 1px black;
+	padding-top: 18px;
+	width: 900px;
+	padding-right: 0px;
+	}
+
+#hello em {
+	font-size: 10px;
+	font-family: arial, sans-serif;
+	font-style: normal;
+	line-height: 13px;
+	text-decoration: underline;
+	}
+
+#hello u {
+	font-size: 12px;
+	font-family: Times, serif;
+	font-style: normal;
+	text-decoration: none;
+	}
+
+#about {
+	width: 916px;
+	position: fixed;
+	}
+
+#about strong {
+	font-size: 22px;
+	line-height: 24px;
+	}
+
+#about em {
+	font-size: 10px;
+	font-family: arial, sans-serif;
+	font-style: normal;
+	font-weight: none;
+	text-decoration: underline;
+	line-height: 13px;
+	}
+
+#about cite {
+	font-size: 10px;
+	font-family: arial, sans-serif;
+	font-style: normal;
+	text-decoration: none;
+	line-height: 13px;
+	}
+
+#about ul {
+	width: 213px;
+	margin-right: 16px;
+	border: none;
+	border-top: dotted 1px black;
+	padding-top: 18px;
+	float: left;
+	color: black;
+	}
+
+#contact ul {
+	width: 213px;
+	margin-right: 16px;
+	border: none;
+	border-top: dotted 1px black;
+	padding-top: 18px;
+	float: left;
+	color: black;
+	}
+
+#contact strong {
+	font-size: 24px;
+	line-height: 24px;
+	}
+
+#contact em {
+	font-size: 10px;
+	font-family: arial, sans-serif;
+	font-style: normal;
+	text-decoration: underline;
+	line-height: 13px;
+	}
+
+#contact cite {
+	font-size: 10px;
+	font-family: arial, sans-serif;
+	font-style: normal;
+	text-decoration: none;
+	line-height: 13px;
+	}
+
+#txt-container a span {
+	display: none;
+	color: black;
+	}
+
+#txt-container a:hover span {
+	display: block;
+	position: fixed;
+	top: 100px;
+	left: 279px;
+	width: 687px;
+	height: 475px;
+	border: none;
+	background: white;
+	}
+
+#txt-container a:hover span cite {
+	float: left;
+	width: 213px;
+	border: none;
+	border-top: dotted 1px black;
+	padding-top: 18px;
+	margin-right: 16px;
+	overflow: none;
+	font-style: normal;
+	text-align: none;
+	color: black;
+	}
+
+div#txt-info {
+ÊÊÊ display: none;
+ÊÊÊ color: black;
+ÊÊÊ 
+}
+
+
+
+
+
+a#info:hover div#txt-info {
+ÊÊÊ display: block;
+ÊÊÊ position: fixed;
+ÊÊÊ top: 100px;
+ÊÊÊ left: 279px;
+ÊÊÊ width: 687px;
+ÊÊÊ height: 475px;
+ÊÊÊ border: none;
+ÊÊÊ background: white;
+ÊÊÊ 
+ÊÊÊ 
+}
+
+
+
+
+div#txt-info cite {
+ÊÊÊ float: left;
+ÊÊÊ width: 213px;
+ÊÊÊ height: 300px;
+ÊÊÊ border: none;
+ÊÊÊ border-top: dotted 1px black;
+ÊÊÊ padding-top: 18px;
+ÊÊÊ margin-right: 16px;
+ÊÊÊ overflow: none;
+ÊÊÊ font-style: normal;
+ÊÊÊ text-align: none;
+ÊÊÊ color: black;
+}
+
+#once { clear: left; }
+}
+
+
+
+
+

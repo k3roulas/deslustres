@@ -1,0 +1,741 @@
+<?php if (!defined('SITE')) exit('No direct script access allowed');
+
+/**
+* Section
+*
+* Exhbition format
+*
+* @version 1.0
+* @author Vaska
+* @author Daniel Eatock
+*/
+
+// defaults from the general libary - be sure these are installed
+$exhibit['dyn_css'] = dynamicCSS();
+$exhibit['lib_js'] = array('jquery.cycle.all.js', 'jquery-scroll.js');
+$exhibit['exhibit'] = createExhibit();
+$exhibit['dyn_js'] = dynamicJS();
+
+
+function getOrderedPages($secid)
+{
+	$OBJ =& get_instance();
+	global $rs, $exhibit;
+
+	
+	if (isset($rs['secid']) && ! empty($rs['secid'])) {
+		$secid = $rs['secid'];
+	}
+	
+	if ($secid != "" ) {
+
+		$pages = $OBJ->db->fetchArray("	select id, secid, sec_desc, sec_path, content, title, url, year, no1.media_file as media_file1, no2.media_file as media_file2
+		FROM ndxz_sections, ndxz_media as no1, ndxz_objects
+		left outer join ndxz_media as no2 on ndxz_objects.id = no2.media_ref_id and no2.media_rollback = 1 or no2.media_file is null
+		where ndxz_objects.id = no1.media_ref_id
+		and ndxz_sections.secid = ndxz_objects.section_id
+		and no1.media_order = 1
+		and hidden != '1'
+		and status = '1'
+		and section_id = $secid
+		and ndxz_sections.sec_disp = 1
+		order by ord ASC");				
+
+	} else {
+
+
+		$pages = $OBJ->db->fetchArray("	select id, secid, sec_desc, sec_path, content, title, url, year, no1.media_file as media_file1, no2.media_file as media_file2
+		FROM ndxz_sections, ndxz_media as no1, ndxz_objects
+		left outer join ndxz_media as no2 on ndxz_objects.id = no2.media_ref_id and no2.media_rollback = 1 or no2.media_file is null
+		where ndxz_objects.id = no1.media_ref_id
+		and ndxz_sections.secid = ndxz_objects.section_id
+		and no1.media_order = 1
+		and hidden != '1'
+		and status = '1'
+		and ndxz_sections.sec_disp = 1
+		order by sec_ord ASC, ord ASC");		
+
+	}
+
+	if (!$pages) return "Error with pages query";
+
+	foreach($pages as $reord)
+	{
+		$order[$reord['sec_desc']][] = array(
+			'id' => $reord['id'],
+			'title' => $reord['title'],
+			'url' => $reord['url'],
+			'content' => $reord['content'],
+			'year' => $reord['year'],
+			'secid' => $reord['secid'],
+			'sec_path' => $reord['sec_path'],
+			'media_file1' => $reord['media_file1'],
+			'media_file2' => $reord['media_file2']);
+	}
+
+	return $order;
+
+}
+
+function createExhibit()
+{
+	$OBJ =& get_instance();
+	global $rs, $exhibit;
+
+	$order = getOrderedPages();	
+	
+	$s = '';
+	
+	
+	// debut de la liste des sous-menu
+	$s .= "<div id='sous-menu-contener'>\n";
+	$s .= "<div id='sous-menu'>\n";
+
+	foreach($order as $key => $out)	{
+	
+		// ajout d'un sous-menu
+		$s .= "<div id=\"sous-menu-list$key\" class=\"sous-menu-list\" id=\"$key\">\n";		
+
+
+		$nb_col = 2;
+		$nb_ligne = 4;
+		
+		$current_item=0;
+		$current_page=0;
+		
+		$pos_expo = 0;
+		$nb_expo = count($out);
+		
+		while ($pos_expo < $nb_expo) {
+		
+			// dans le cas d'une nouvelle page 
+			if ( ($current_item % ( ( $nb_col * $nb_ligne ) ) ) ==0 ) {
+				if ($current_item != 0) { // si pas la premiere on ferme la prec
+					$s .= "\n</div>";
+					$current_page++;
+				}
+				$s .= "\n<div id='sous-menu-$key-page$current_page' class='sous-menu-page'>";			
+			}
+			
+			// organisation en ligne/colonne
+			if ( ($current_item % $nb_ligne) == 0) {
+				if ($current_item != 0) { // si pas la permiere col on ferme la prec
+					$s .= "</ul>";					
+				}
+				$s .= "<ul>";
+			}
+			
+			
+			// fleche de navigation par page			
+			
+			if ( ( ($current_item % ( ( $nb_col * $nb_ligne ) ) ) ==0 ) && ($current_item != 0) ) {
+			
+				// si premier item de la page et pas premier item en absolue : prec
+				$page_precedente = $current_page - 1; 
+				$cmd = "$('#sous-menu-contener').scrollTo('#sous-menu-$key-page$page_precedente', 500, {axis:'xy', offset:{top:0, left:0}});";
+				$s .= "<li><a href=\"javascript:void(null);\" onclick=\"$cmd;\">prec</a><br></li>\n";				
+				
+			} else if ( ( ($current_item % ( ( $nb_col * $nb_ligne ) -1 ) ) ==0 ) 
+				&& ($current_item != 0)			
+				&& ($pos_expo != $nb_expo -1 ) ) {
+			
+				// si dernier item de la page, pas premier item en absolue, et il existe au moins un expo apres : suiv
+				$page_suivante = $current_page + 1; 
+				$cmd = "$('#sous-menu-contener').scrollTo('#sous-menu-$key-page$page_suivante', 500, {axis:'xy', offset:{top:0, left:0}});";
+				$s .= "<li><a href=\"javascript:void(null);\" onclick=\"$cmd;\">suiv</a><br></li>\n";				
+				
+			} else {
+			
+				// affiche le lien de l'expo 			
+				$expo = $out[$pos_expo];
+				$title = $expo['title'];
+				$url = pathToAnchor($expo['url']);			
+				$s .= "<li><a id='ssmenu$url' href=\"javascript:void(null);\" onclick=\"scrollToExpo('$url');\">$title</a><br></li>\n";
+				// iteration des expos
+				$pos_expo++;
+			}
+			
+			// iteration des items
+			$current_item++;
+		}
+		
+		// fin de la liste
+		$s .= "\n</ul>";
+		
+		// fin de la page du sous menu
+		$s .= "\n</div>";		
+		
+		// fin du sous-menu
+		$s .= "\n</div>";		
+		
+	}
+
+	
+	// fin de la liste des sous-menu
+	$s .= "</div>";
+	$s .= "</div>";
+	/**/
+
+
+
+	$s .= "<div id=\"full\">";
+
+
+	/////////////////////////////
+	// affichage des pre-expos
+	/////////////////////////////	
+
+	if (!empty($rs['obj_listexpopretitle'])) {
+		$s .= getHtmlExpoOrpheline($rs['obj_listexpopretitle']);
+	}		
+		
+	
+	////////////////////////
+	// affichage des expos
+	////////////////////////
+	
+	
+	$acpt = 0;
+	
+	$q=1;
+	foreach($order as $key => $out)
+	{
+
+		$s .= "<div class='section'>";
+		
+		// pour chaque nouvelle expo on ajoute un sous menu contenant toutes les minexpo
+		if (! empty($out[0]) && isset($out[0]['secid']) ) {
+			$sec_path = $out[0]['sec_path'];
+		    $s .= getHtmlMiniExpo($out[0]['secid'], $sec_path);
+		}
+		$s .= "<div class='section-expos'>";
+		
+		$singularSection = singular($key);				
+
+		$nb_out = count($out);
+		
+		for($pos_out=0; $pos_out < $nb_out; $pos_out++) { 
+		
+			$page = $out[$pos_out];
+			$acpt += 1;			
+			$pages = $OBJ->db->fetchArray("SELECT *
+				FROM ".PX."media, ".PX."objects_prefs
+				WHERE media_ref_id = '$page[id]'
+				AND obj_ref_type = 'exhibit'
+				AND obj_ref_type = media_obj_type
+				AND media_hide = 0
+				ORDER BY media_order ASC, media_id ASC");
+			
+			// lien suiv
+			$lien_suiv = "";
+			if ($pos_out < $nb_out-1) {
+				$url = pathToAnchor($out[$pos_out+1]['url']);
+				$l=$q+1;
+				$lien_suiv = "<li>|<a href=\"javascript:void(null);\" onclick=\"scrollToExpo('$url');\">$singularSection SUIV</a></li>\n";
+			}
+
+			// lien prec
+			$lien_prec = "";
+			if ($pos_out != 0) {			
+				$url = pathToAnchor($out[$pos_out-1]['url'] );
+				$l=$q-1;				
+				$lien_prec = "<li>|<a href=\"javascript:void(null);\" onclick=\"scrollToExpo('$url');\">$singularSection PREC</a></li>\n";				
+			}
+			
+			// lient tout
+			$lien_tout = "";
+			if (isset($sec_path)){
+				$url = pathToAnchor($sec_path);
+				$lien_tout = "<li><a href=\"javascript:void(null);\" onclick=\"changeSection('$url');\">TOUS</a></li>\n";				
+			}
+			
+			$url = pathToAnchor($page['url']);
+			$s .= "<div class='expo' id='$url'>\n";
+			
+			if ( $lien_suiv != "" ||  $lien_prec != "" ) {
+				$s .= "\n<ul class='expo-nav'>";
+				$s .= $lien_suiv;
+				$s .= $lien_prec;
+				$s .= $lien_tout;
+				$s .= "\n</ul>";
+			}
+			
+			// titre de l'expo
+			$title = $page['title'];			
+			$s .= "\n<div class='expo-titre'>";
+			$s .= "\n$title";
+			$s .= "\n</div>";
+			
+			if (isset($page['content'])) {			
+				if (!$pages) {
+					$classtxt = "txt-expo-sans-image";
+				} else {
+					$classtxt = "txt-expo-avec-image";	
+				}
+				$s .= "<div class=\"$classtxt with-scrollbar\">";
+				$s .= $page['content'];
+				$s .= "</div>";
+			}
+
+			if (!$pages) break;
+
+			$nb_image = 0; $a = '';
+
+			// people will probably want to customize this up
+			foreach ($pages as $go)
+			{
+				$title 		= ($go['media_title'] == '') ? '' : $go['media_title'] . '&nbsp;';
+				$caption 	= ($go['media_caption'] == '') ? '&nbsp;' : $go['media_caption'];
+
+				list($width, $height, $type, $attr) = getimagesize( "./" . GIMGS . '/' . $go['media_file']);
+				//$a .= "\n<div><img width='$width' height='$height' class=next$acpt src='" . BASEURL . GIMGS . "/$go[media_file]' class='img-bot' /><div class='legende'>{$title}{$caption}</div></div>\n";
+				$a .= "\n<div><img class=next$acpt src='" . BASEURL . GIMGS . "/$go[media_file]' class='img-bot' /><div class='legende'><p>{$title}<p>{$caption}</div></div>\n";
+				$nb_image++;
+			}
+			$nb_page = (int)(($nb_image-1)/10)+1;
+
+			//$(pager).parent().scrollTo($(pager).find('li').filter('li:eq('+currSlide+')'), 0, {axis:"xy", offset:{top:0, left:0}});
+
+			
+			// images
+			
+			// pas de navigation suivant precedent entre les images 
+			// $s .= "\n<div id='nav_one_$q' class='nav_one'><a id='prev$q' class=prev$q href=\"javascript:void(null);\">&lt;</a>&nbsp&nbsp<a id='next$q' class=next$q href=\"javascript:void(null);\">&gt;</a></div>";
+			$s .= "\n<a class='miniature-nav-suivante' id='miniature-nav-suivante$q' href=\"javascript:void(null);\" onclick=\"\">[+]</a>";
+			$s .= "\n<a class='miniature-nav-precedente' id='miniature-nav-precedente$q' href=\"javascript:void(null);\" onclick=\"\">[-]</a>";
+			$s .= "\n<div id='miniature-nav-contener$q' class='miniature-nav-contener'>";
+			$s .= "\n<ul id='minature-nav$q' class='minature-nav'><span id='num'></span></ul>";
+			$s .= "\n</div>\n"; // fin de miniature-nav-contener
+				   
+			$s .= "\n<div id='img-container$q' class='img-container'>\n";
+
+			$s .= "\n<div id='slideshow$url' class='pics;slideshow;'>\n";
+			$s .= $a;
+			$s .= "\n</div>\n";
+			$s .= "\n<div id='img-info$q'></div>";		
+			$s .= "\n</div>\n\n";						
+			$q++;
+
+			// fin expo
+			$s .= "\n</div>";
+			
+		}
+				
+		// fin section-expos
+		$s .= "\n</div>"; 
+		
+		// fin section
+		$s .= "\n</div>"; 
+
+	}	
+	
+	/////////////////////////////
+	// affichage des posts expos
+	/////////////////////////////	
+
+	if (!empty($rs['obj_listexpoposttitle'])) {
+		$s .= getHtmlExpoOrpheline($rs['obj_listexpoposttitle']);
+	}
+	
+	
+	$s .= "</div>";
+	
+	return $s;
+}
+
+function singular($libelle) 
+{
+	// supprimer le dernier s
+	$mot_array = explode(' ',$libelle);
+	$dernier_mot = $mot_array[count($mot_array)-1];
+	//$dernier_mot = strtolower($dernier_mot);
+	//$dernier_mot = ucwords($dernier_mot);
+	if (strtolower(substr($dernier_mot, -1)) == 's') {
+		$dernier_mot = substr($dernier_mot, 0, -1);
+	}
+	return $dernier_mot;	
+}
+
+function getHtmlMiniExpo($secid) 
+{
+	$OBJ =& get_instance();
+	global $rs, $exhibit;
+	
+	$s = "";
+	
+	$order = getOrderedPages($secid);
+	
+	//$s .= "<div class=\"expo\" id=\"$url\">\n";
+
+	$i = 1;
+	foreach($order as $key => $out)
+	{
+		$url_section =  pathToAnchor($out[0]['sec_path']);
+		$s .= "<div class=\"section-miniexpos expo\" id=\"$url_section\">\n";
+		$s .= "<div class=\"lst-miniexpo\" id=\"lst-miniexpo$url_section\">";
+		foreach($out as $page)
+		{
+			
+			$acpt += 1;
+			$classa = empty($page['media_file2']) ? "" : "class=\"RollAndRock$acpt\"";
+			$stylea = empty($page['media_file2']) ? "" : "<style> a.RollAndRock$acpt { display: block; background-image: url('" . BASEURL . GIMGS . "/th2-$page[media_file2]') } a.RollAndRock$acpt:hover { visibility: visible } a.RollAndRock$acpt:hover img { visibility: hidden } </style>";							
+			$title = $page['title'];
+			$url = pathToAnchor($page['url']);
+			
+			
+			$s .= "\n<div class='miniexpo'>";
+			$s .= "\n	<div class=\"img-miniexpo\">";
+			$s .= "\n $stylea";
+			$s .= "\n		<a $classa href=\"javascript:void(null);\" onclick=\"scrollToExpo('$url');\" ><img src='" . BASEURL . GIMGS . "/th2-$page[media_file1]' alt='$caption' title='$title'  /></a>";			
+			//$s .= "\n		<a $classa href='" . BASEURL . ndxz_rewriter($page['url']) . "' onclick=\"do_click();\" onMouseOver=\"javascript:afficherLibelle('" . $page['title'] . "');\" onMouseOut=\"javascript:afficherLibelle('');\" ><img src='" . BASEURL . GIMGS . "/th2-$page[media_file1]' alt='$caption' title='$title'  /></a>";
+			$s .= "\n	</div>";	
+			$s .= "\n	<span>";
+			$s .= "\n		<div class=\"txt-miniexpo\">";
+			$s .= "\n			<a href=\"javascript:void(null);\" onclick=\"scrollToExpo('$url');\">" . $page['title'] . "</a>";
+			$s .= "\n		</div>\n";
+			$s .= "\n	</span>";
+			$s .= "\n</div>";
+			
+			$i++;
+			
+			
+		}
+		$s .= "</div>\n";
+		$s .= "</div>\n";
+	}
+	
+	
+	return $s;	
+}
+
+function getHtmlExpoOrpheline($list_separated_comma) 
+{
+
+	$OBJ =& get_instance();
+	global $rs, $exhibit;
+	
+	$s = "";
+	
+	$list_expo = array();
+	// selection des expo post title
+	$list_path = explode (";", $list_separated_comma);
+	foreach ($list_path as $path) {
+		if ($path != '') {
+			$expo = $OBJ->db->fetchRecord("SELECT * FROM ".PX."objects WHERE url = '".$path."'");
+			if ( !empty($expo) ) {	
+				$list_expo[] = $expo; 
+			}
+		}
+	}
+	
+	foreach ($list_expo as $expo) {
+	
+		$s .= "<div class='section'>";
+
+		$url = pathToAnchor($expo['url']);
+		$s .= "<div class=\"expo\" id=\"$url\">\n";		
+		
+
+
+		$expoid = $expo['id'];
+		
+		$pages = $OBJ->db->fetchArray("SELECT *
+			FROM ".PX."media, ".PX."objects_prefs
+			WHERE media_ref_id = '$expoid'
+			AND obj_ref_type = 'exhibit'
+			AND obj_ref_type = media_obj_type
+			AND media_hide = 0
+			ORDER BY media_order ASC, media_id ASC");		
+			
+		if (isset($expo['content'])) {		
+			if (!$pages) {
+				$classtxt = "txt-expo-sans-image";
+			} else {
+				$classtxt = "txt-expo-avec-image";			
+			}			
+			$s .= "<div class=\"$classtxt\">";
+			$s .= $expo['content'];
+			$s .= "</div>";
+		}
+			
+		if ($pages) {
+		
+			$i = 1; $a = '';
+
+			// people will probably want to customize this up
+			foreach ($pages as $go)
+			{
+				$title 		= ($go['media_title'] == '') ? '' : $go['media_title'] . '&nbsp;';
+				$caption 	= ($go['media_caption'] == '') ? '&nbsp;' : $go['media_caption'];
+
+				list($width, $height, $type, $attr) = getimagesize( "./" . GIMGS . '/' . $go['media_file']);
+				$a .= "\n<div><img width='$width' height='$height' class=next$acpt src='" . BASEURL . GIMGS . "/$go[media_file]' class='img-bot' /><p>{$title}{$caption}</p></div>\n";
+
+				$i++;
+			}
+
+			// images
+			$s .= "<div id='img-container'>\n";
+			$s .= "<div id='minature-nav$q' class='minature-nav'><a id='prev' href='#'>&lt;</a>&nbsp&nbsp<a id='next$q' class=next$q href='#'>&gt;</a>
+				   <span id='num'></span></div>";
+			$s .= "<div id='slideshow$url' class='pics;slideshow;'>\n";
+			$s .= $a;
+			$s .= "</div>\n";
+			$s .= "<div id='img-info$q'></div>";		
+			$s .= "</div>\n\n";			
+			$q++;
+		
+		}
+
+		// fin expo
+		$s .= "</div>";		
+		
+		// fin de section
+		$s .= "</div>";		
+			
+	}	
+	return $s;
+}
+
+
+function dynamicCSS()
+{
+	return ".backgrounded { margin-right: 1px; }
+	.backgrounded a { border: none; }
+	.backgrounded a img { border: 3px solid #fff; height: 25px; width: 25px; }
+	.backgrounded-text { margin-top: 9px; }";
+}
+
+
+function dynamicJS()
+{
+	$OBJ =& get_instance();
+	global $rs, $exhibit;	
+
+
+	$order = getOrderedPages();
+
+	
+	$djs =''; $i = 1;
+
+	foreach($order as $key => $out) {
+	
+		$nb_out = count($out);
+		
+		for($pos_out=0; $pos_out < $nb_out; $pos_out++) { 
+		
+			$page = $out[$pos_out];
+			
+			$end_function = "";
+			
+			$j=$i+1;
+			if ($pos_out < $nb_out-1) {
+				$url = pathToAnchor($out[$pos_out+1]['url']);
+				$end_function = ",end: function(opts) {
+					scrollToExpo('$url');
+				}";					
+			} else {
+				$url_section =  pathToAnchor($out[0]['sec_path']);			
+				$end_function = ",end: function(opts) {
+					changeSection(\"$url_section\");
+				}";			
+			}
+			
+			$url = pathToAnchor($page['url']);
+				
+			$djs .= "$('#slideshow$url').cycle({fx:'fade',pagerEvent: 'mouseover',speed:'2000',timeout: 0,nowrap: 1, nextPagerPage: '#miniature-nav-suivante".$i."', prevPagerPage: '#miniature-nav-precedente".$i."', next: '.next".$i."', prev: '.prev".$i."', containerResize: false, pager:  '#minature-nav$i', pagerAnchorBuilder: 
+				function(idx, slide) { 
+					return '<li><a href=\"#\"><img src=\"' + dirname(slide.childNodes[0].src) + '/sys-' + basename(slide.childNodes[0].src) +  '\" width=\"44\" height=\"44\" /></a></li>';
+				}
+				$end_function
+				});\n";
+			
+			$i++;
+		}
+	}
+		
+	return "
+
+function basename(path) {
+	return path.replace(/\\\\/g,'/').replace( /.*\//, '' );
+};
+
+function dirname(path) {
+	return path.replace(/\\\\/g,'/').replace(/\/[^\/]*$/, '');;
+}
+
+function scrollToArea(destination){
+    $.scrollTo($(destination), 1300, {axis:\"xy\", offset:{top:-134, left:-156}});
+};
+
+function addClassDelayed(jqObj, c, to) {    
+    setTimeout(function() { jqObj.addClass(c); }, to);
+};
+
+function setActiveDelayed(the_class, the_id, c, to) {
+    setTimeout(function() { the_class.removeClass(c); the_id.addClass(c); }, to);
+}
+
+function removeClassDelayed(jqObj, c, to) {    
+    setTimeout(function() { jqObj.removeClass(c); }, to);
+};
+
+function changeSection(url_section) {	
+
+	$('#sous-menu').find('a').removeClass('activeProject');
+	$('.menu-section').removeClass('activeSection');	
+	
+	setActiveDelayed($('.menu-section'),  $('#menu'+url_section), 'activeSection', 1300);	
+
+	scrollToArea('#'+url_section);
+	
+	$(\".sous-menu-list\").hide();
+	$('#sous-menu-contener').hide();
+	
+	setTimeout(function() { genereLogo(); }, 900);
+
+};
+
+function afficheSSMenu(url_destination) {
+
+}
+
+function scrollToExpo(url_destination){
+
+	$('#sous-menu').find('a').removeClass('activeProject');
+	
+	addClassDelayed($('#ssmenu'+url_destination), 'activeProject', 1300);
+
+	setTimeout(function() {	
+		$('#ssmenu'+url_destination).parent().parent().parent().parent().show();			
+		$('#sous-menu-contener').fadeIn(0);
+		$('#sous-menu-contener').scrollTo($('#ssmenu'+url_destination).parent().parent().parent(),0);
+	}, 1300);
+
+	
+	$('#slideshow'+url_destination).cycle(0);
+    $.scrollTo($('#'+url_destination), 1300, {axis:\"xy\", offset:{top:-134, left:-156}});
+	
+	setTimeout(function() { genereLogo(); }, 900);
+
+};
+
+function scrollToSousMenu(destination){
+	$('#sous-menu-contener').scrollTo(destination, 0, {axis:\"xy\", offset:{top:0, left:0}});
+};
+
+var lettre_d = 0;
+var lettre_l = 1;
+var lettre_et = 2;
+var lettre_a = 3;
+var affichage_logo_en_cours = 0;
+
+
+function genereLogo () {
+			
+	if (affichage_logo_en_cours == 1) return;
+	affichage_logo_en_cours = 1;
+	
+	// nombre aleatoire de 0 a 2
+	var tab = [0,1,2,3];
+	tab[lettre_d] = \"rem\";
+	for (var i=0; i< tab.length; i++) { if (tab[i]== \"rem\" ) {tab.splice(i,1);i--;}}
+	aleatoire=Math.floor(Math.random()*tab.length);
+	lettre_d = tab[aleatoire];				
+				
+	var tab = [0,1,2,3];
+	tab[lettre_d] = \"rem\";
+	tab[lettre_l] = \"rem\";
+	for (var i=0; i< tab.length; i++) { if (tab[i]== \"rem\" ) {tab.splice(i,1);i--;}}
+	aleatoire=Math.floor(Math.random()*tab.length);
+	lettre_l = tab[aleatoire];
+				
+	var tab = [0,1,2,3];
+	tab[lettre_d] = \"rem\";
+	tab[lettre_l] = \"rem\";
+	tab[lettre_et] = \"rem\";
+	for (var i=0; i< tab.length; i++) { if (tab[i]== \"rem\" ) {tab.splice(i,1);i--;}}
+	aleatoire=Math.floor(Math.random()*tab.length);
+	lettre_et = tab[aleatoire];		
+
+	var tab = [0,1,2,3];
+	tab[lettre_d] = \"rem\";
+	tab[lettre_l] = \"rem\";
+	tab[lettre_et] = \"rem\";
+	for (var i=0; i< tab.length; i++) { if (tab[i]== \"rem\" ) {tab.splice(i,1);i--;}}
+	lettre_a = tab[0];		
+
+	//$('.logo-lettre').hide();
+	laps_temps = 200;
+	$('.logo-lettre:visible').fadeOut(laps_temps);
+	
+    setTimeout(function() { 
+		$('#logo-lettre-'+ (lettre_d+1) +'d').fadeIn(laps_temps);
+		$('#logo-lettre-'+ (lettre_l+1) +'l').fadeIn(laps_temps);
+		$('#logo-lettre-'+ (lettre_et+1) +'et').fadeIn(laps_temps);
+		$('#logo-lettre-'+ (lettre_a+1) +'a').fadeIn(laps_temps);
+		setTimeout(function() { affichage_logo_en_cours = 0 }, laps_temps);	
+	}, laps_temps);
+		
+}
+
+function redimentionneHauteur() {
+
+	// mise a jout de la hauteur des listes de miniexpo		
+	$(\".lst-miniexpo\").height($(window).height()-150);
+	// appliquer une scrollbarre jquery
+	$(\".lst-miniexpo\").jScrollPane();		
+	
+	if (($(window).height() < 690) || ($(\".img-container img\") != 444)){
+
+		ratio = 602/444;
+		// redimentionner les images
+		nle_hauteur = $(window).height()-245;
+		if (nle_hauteur > 444) { nle_hauteur = 444; }
+		nle_largeur = Math.floor(nle_hauteur * ratio);			
+		$(\".img-container img\").height(nle_hauteur);
+		$(\".img-container img\").width(nle_largeur);
+
+		// remonter les slideshows et element de navigation			
+		$(\".miniature-nav-contener\").css(\"margin-top\", nle_hauteur + 45);
+		$(\".miniature-nav-suivante\").css(\"margin-top\", nle_hauteur + 75);
+		$(\".miniature-nav-precedente\").css(\"margin-top\", nle_hauteur + 75);
+
+	}
+	
+};
+
+ 
+$(document).ready(function(){
+
+	// slideshow
+	$djs;		
+
+	// attraper l'evenement entrer dans le cadre du logo		
+	$(\"#logo\").mouseenter(	function () { genereLogo() } );
+
+	// forcer la generation du logo
+	genereLogo();
+
+	// attraper l'evenement redimentionnement du navigateur
+	$(window).resize(function(){ redimentionneHauteur()	});		
+
+	// forcer l'evenement de redimentionnement du navigateur
+	redimentionneHauteur();
+	
+	// ajouter une scrollbarre jquery sur les elements scrollable 
+	$(\".with-scrollbar\").jScrollPane();
+
+});
+	
+	";	
+	
+	
+}
+
+
+function pathToAnchor($path) 
+{
+	return str_replace ( "/", "-", $path );
+}
+?>

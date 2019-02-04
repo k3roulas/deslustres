@@ -1,0 +1,110 @@
+/**
+* CSS
+* 
+* @version 1.0
+* @author Vaska 
+* @author Gregory Cadar
+*/
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-size: 10px;
+	font-family: "Trebuchet MS","Courier New",Verdana, sans-serif;
+	background: #fff;
+}
+
+body.section-1 { }
+body.section-2 { }
+body.section-3 { }
+
+a:link { text-decoration: none; }
+a:active { text-decoration: none; }
+a:visited { text-decoration: none; color: #666; }
+a:hover { text-decoration: underline; }
+
+a img { border: none; }
+
+#logo { 
+z-index: 10;
+position: fixed; width: 160px;
+    overflow: hidden;
+    top: 10px;
+    bottom: 0;
+	left: 10px;
+    position: fixed;
+    height: 160px;
+	background-color: white;
+}
+
+#menu {
+    z-index: 20;
+    width: 1000px;
+    overflow: hidden;
+    top: 0px;
+    bottom: 0;
+	left: 180px;
+    position: fixed;
+    height: 170px;
+	background-color: white;
+	border-bottom: solid;
+	border-width: 1px;
+	border-color: black;
+	margin: 0 0 0 0;
+	
+}
+
+#menu .container { padding: 30px 0 0 0; }
+
+#menu a { color: black;
+margin: 0 0 2px 0;
+height: 8px;
+	line-height: none;
+	width: 80px;
+	text-transform: lowercase;
+}
+
+#menu ul { }
+	
+
+#menu li { }
+
+#menu .section-title { }
+
+#content { z-index: 1;
+    margin: 0 0 20px 0;
+    width: 1000px;
+    top: 180px;
+    bottom: 0;
+	left: 180px;
+    position: absolute;
+	background-color: white;  }
+   
+#miniexpo { width: 180px }
+
+.container {
+    padding: 5px 5px 25px 5px;
+}
+
+#content p { width: 400px; margin-bottom: 9px; }
+
+p {
+    margin: 0px 0 0 0;
+}
+
+p a {
+    margin: 0 0 0 0;
+}
+
+h1 { font-size: 32px; }
+h2 { font-size: 24px; }
+h3 { font-size: 16px; }
+h4 { font-size: 12px; }
+
+#img-container	{ margin: 0; padding: 0; }
+#img-container p	{ width: 400px; margin: 0; padding: 0 0 12px 0; }
+
+#once { clear: left; }
+}
