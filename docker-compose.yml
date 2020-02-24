@@ -10,6 +10,8 @@ services:
     volumes:
       - ${PROJECT_ROOT}/:/var/www/html/
     container_name: php
+    environment:
+      - DATABASE_URL=mysql://${DB_USERNAME}:${DB_PASSWORD}@127.0.0.1:3306/${DB_NAME}
   apache:
     build:
       context: './apache/'
@@ -32,7 +34,8 @@ services:
     ports:
       - "3306:3306"
     volumes:
-            - data:/var/lib/mysql
+      - data:/var/lib/mysql
+      - .:/project/
     networks:
       - backend
     environment:
